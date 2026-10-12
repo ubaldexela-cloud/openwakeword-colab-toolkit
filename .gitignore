@@ -1,0 +1,16 @@
+__pycache__/
+*.pyc
+.venv/
+icy_model/
+hey_clem_model/
+icy_outputs/
+hey_clem_outputs/
+*.onnx
+*.onnx.data
+*.tflite
+piper-sample-generator/
+mit_rirs/
+audioset_16k/
+fma/
+*.npy
+preflight.py

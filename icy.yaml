@@ -1,0 +1,96 @@
+# openWakeWord training config for the ME2 wake word "Icy".
+#
+# Run with:  python oww_train_shim.py --training_config icy.yaml \
+#                --generate_clips --augment_clips --train_model
+# On a modern stack (torchaudio >=2.2 / scipy >=1.17, e.g. 2026 Colab) the
+# shim is required — icy_colab.ipynb writes the same file. See README.md
+# and ME2_ICY.md for where this runs (Colab / HPC / Raspberry Pi).
+
+model_name: "icy"
+
+# "Icy" is the spoken wake word for the ME2 Voice Controlled Smart Device.
+# espeak-ng en-us renders it as ˈaɪsi (EYE-see). Confirm with:
+#   python phrase_check.py "icy" "hey icy" "hey jarvis"
+#
+# This is a short two-syllable name. The original kit measured bare "clem"
+# at 0.46 s vs 0.79 s for "hey jarvis" and left it out for that reason.
+# "icy" is in the same length class, so n_samples is raised above the
+# 25,000-per-phrase density and custom_negative_phrases lists near-misses
+# ("ice", "i see", "spicy", …). Do not skip check_model.py after training.
+target_phrase:
+  - "icy"
+
+# Near-misses to train against, on top of the phoneme-overlap negatives
+# openWakeWord generates automatically. These are the sounds a living-room
+# TV or command like "turn on the light" might produce next to "icy".
+custom_negative_phrases:
+  - "ice"
+  - "i see"
+  - "hi see"
+  - "i sea"
+  - "eyes"
+  - "easy"
+  - "icing"
+  - "icicle"
+  - "iceland"
+  - "nice"
+  - "spicy"
+  - "pricey"
+  - "dice"
+  - "rice"
+  - "icy hot"
+  - "isaac"
+  - "i c"
+
+# One target phrase. 50,000 is 2x the 25,000-per-phrase density the Clem
+# config used, because this name is short. On a T4 this is roughly 10
+# minutes of generation; on CPU it is hours — do not run this on the
+# PERLAS login node.
+n_samples: 50000
+n_samples_val: 5000
+
+tts_batch_size: 50
+augmentation_batch_size: 16
+
+# Each generated clip is augmented twice — cheaper robustness than generating
+# twice as many clips, since the augmentation itself is random.
+augmentation_rounds: 2
+
+# dscripka's fork, NOT rhasspy/piper-sample-generator: train.py does
+# `from generate_samples import generate_samples`, and only the fork has that
+# module at the top level.
+piper_sample_generator_path: "./piper-sample-generator"
+
+output_dir: "./icy_model"
+
+rir_paths:
+  - "./mit_rirs"
+
+background_paths:
+  - "./audioset_16k"
+  - "./fma"
+
+background_paths_duplication_rate:
+  - 1
+  - 1
+
+false_positive_validation_data_path: "./validation_set_features.npy"
+
+feature_data_files:
+  "ACAV100M_sample": "./openwakeword_features_ACAV100M_2000_hrs_16bit.npy"
+
+batch_n_per_class:
+  "ACAV100M_sample": 1024
+  "adversarial_negative": 50
+  "positive": 50
+
+model_type: "dnn"
+layer_size: 32
+
+steps: 50000
+
+max_negative_weight: 1500
+
+# Same all-day listening budget as the original kit. The Pi listener is
+# always on; do not loosen this to make a short name look better on paper.
+target_false_positives_per_hour: 0.2

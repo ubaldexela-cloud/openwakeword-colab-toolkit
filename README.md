@@ -1,5 +1,27 @@
 # Train your own openWakeWord wake word (2026 edition)
 
+## ME2 fork: wake word “Icy”
+
+This checkout is **ubaldexela-cloud/openwakeword-colab-toolkit**, a fork of
+saintpete’s kit, configured for the ME2 Voice Controlled Smart Device.
+
+| File | Role |
+| --- | --- |
+| `icy.yaml` | Training config: phrase `icy`, model name `icy`, 50k TTS clips, near-miss negatives |
+| `icy_colab.ipynb` | Colab trainer (same cells as the Clem notebook, Icy config) |
+| `ME2_ICY.md` | Which steps run on HPC vs Colab vs Raspberry Pi 5 |
+| `pi/listen_icy.py` | Pi 5 listener using the openWakeWord ONNX API |
+| `tests/test_icy_config.py` | HPC checks that do not train a model |
+
+The Clem files (`hey_clem_colab.ipynb`, `hey_clem.yaml`) are the original
+workflow and are left unchanged.
+
+**No `icy.onnx` has been trained in this fork yet.** Upload `icy_colab.ipynb`
+to Colab (T4 GPU), then measure with `check_model.py` before putting anything
+on the Pi. Do not overwrite the ME2 VCM Run 3 or Scratch packages.
+
+---
+
 A working end-to-end kit for training a **custom wake word** ("hey Robby",
 "okay Mango", …) with [openWakeWord](https://github.com/dscripka/openWakeWord)
 on today's Google Colab — plus, more importantly, the **measurement gate**
@@ -19,7 +41,8 @@ name-agnostic.
 
 | File | What it does |
 | --- | --- |
-| `hey_clem_colab.ipynb` | The trainer. Upload to Colab, edit ONE cell, Run all (~1.5–2 h on a free-tier T4). |
+| `icy_colab.ipynb` | **ME2 trainer.** Upload to Colab, Run all (~1.5–2 h on a T4). Phrase and model name are already `icy`. |
+| `hey_clem_colab.ipynb` | Original Clem trainer, kept as the upstream workflow. |
 | `oww_train_shim.py` | Compat shim for `openwakeword.train` on a modern stack (also written by the notebook itself). |
 | `check_model.py` | **The deployment gate.** False-accepts/hour + recall vs threshold, from real audio. Do not skip. |
 | `phrase_check.py` | Compare candidate phrases (phonemes, clip length) *before* spending an hour training the wrong one. |
